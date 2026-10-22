@@ -1,0 +1,234 @@
+/* Búsqueda del tesoro — tema bosque oscuro, blanco/negro y destellos dorados */
+:root {
+  color-scheme: dark;
+  --color-texto: #ffffff;
+  --color-fondo: #06150f;
+  --color-acento: #d8b65c;
+  --color-acento-hover: #f0d47e;
+  --color-borde: rgba(255,255,255,.14);
+  --color-texto-secundario: #d0d7d2;
+  --color-error: #ff9696;
+  --ancho-contenido: 460px;
+  --sombra: 0 24px 70px rgba(0,0,0,.48);
+}
+
+* { box-sizing: border-box; }
+html { min-height: 100%; background: #06150f; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: #fff;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(ellipse at -8% 22%, rgba(224,184,75,.20) 0, rgba(224,184,75,.075) 9%, transparent 26%),
+    radial-gradient(ellipse at 108% 68%, rgba(224,184,75,.18) 0, rgba(224,184,75,.06) 10%, transparent 28%),
+    radial-gradient(ellipse at 50% -20%, rgba(24,86,55,.5), transparent 48%),
+    linear-gradient(135deg, #06150f 0%, #09251a 48%, #04110c 100%);
+  background-attachment: fixed;
+  overflow-x: hidden;
+  position: relative;
+}
+/* Destellos dorados ambientales en los laterales */
+body::before, body::after {
+  content: "";
+  position: fixed;
+  z-index: 0;
+  top: 8vh;
+  width: 3px;
+  height: 84vh;
+  pointer-events: none;
+  opacity: .58;
+  background: linear-gradient(180deg, transparent, rgba(236,196,91,.75) 24%, rgba(255,226,139,.14) 45%, rgba(236,196,91,.58) 68%, transparent);
+  filter: blur(2px);
+  animation: goldPulse 5.8s ease-in-out infinite;
+}
+body::before { left: max(10px, calc((100vw - 1200px)/2)); }
+body::after { right: max(10px, calc((100vw - 1200px)/2)); animation-delay: -2.9s; }
+@keyframes goldPulse { 0%,100% { opacity: .22; filter: blur(4px); } 45% { opacity: .78; filter: blur(1px); } 60% { opacity: .42; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; scroll-behavior: auto !important; } }
+
+[hidden] { display: none !important; }
+#app {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  padding: clamp(18px, 5vh, 48px) 18px;
+}
+#app > section {
+  width: min(100%, var(--ancho-contenido));
+  min-width: 0;
+  align-self: center;
+  padding: clamp(24px, 5vw, 38px);
+  background: linear-gradient(155deg, rgba(10,23,17,.96), rgba(4,13,9,.97));
+  border: 1px solid rgba(230,198,111,.25);
+  border-radius: 24px;
+  box-shadow: var(--sombra), 0 0 35px rgba(202,164,68,.055);
+  backdrop-filter: blur(14px);
+  animation: panelIn .32s ease-out both;
+}
+@keyframes panelIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+#app > section > header { margin: 0 0 28px; }
+#app > section > header p { margin: 10px 0 0; }
+h1, h2, h3 { color: #fff; line-height: 1.13; letter-spacing: -.035em; margin: 0; }
+h1 { font-size: clamp(1.8rem, 6vw, 2.45rem); font-weight: 800; }
+p { color: var(--color-texto-secundario); line-height: 1.6; }
+strong, #nombre-usuario { color: #fff; }
+label { display: block; margin: 0 0 8px; color: #fff; font-size: .92rem; font-weight: 650; }
+form { display: grid; gap: 19px; }
+form > div { min-width: 0; }
+input {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 50px;
+  padding: 13px 15px;
+  border: 1px solid rgba(255,255,255,.19);
+  border-radius: 12px;
+  color: #fff;
+  background: rgba(0,0,0,.42);
+  font: inherit;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s, background .2s;
+}
+input::placeholder { color: #a7b1aa; }
+input:focus { border-color: rgba(231,194,89,.9); box-shadow: 0 0 0 3px rgba(231,194,89,.13); background: rgba(0,0,0,.58); }
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+  padding: 12px 18px;
+  border: 1px solid rgba(239,211,133,.55);
+  border-radius: 12px;
+  color: #fff;
+  background: linear-gradient(135deg, #171b15, #24261b);
+  box-shadow: 0 6px 18px rgba(0,0,0,.2);
+  font: inherit;
+  font-weight: 750;
+  text-align: center;
+  cursor: pointer;
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
+}
+button:hover { border-color: #f0d47e; background: linear-gradient(135deg, #28281a, #35301b); box-shadow: 0 0 0 1px rgba(226,189,83,.15), 0 8px 24px rgba(0,0,0,.28); }
+button:active { transform: translateY(1px) scale(.99); }
+button:focus-visible { outline: 3px solid rgba(240,212,126,.8); outline-offset: 3px; }
+button:disabled { cursor: not-allowed; opacity: .55; }
+form button[type="submit"] { margin-top: 2px; }
+#pantalla-login > p, #pantalla-registro > p { margin: 22px 0 0; text-align: center; font-size: .92rem; }
+#pantalla-login > p button, #pantalla-registro > p button {
+  width: auto; min-height: auto; display: inline; padding: 2px 3px; border: 0; border-radius: 4px;
+  color: #f0d47e; background: transparent; box-shadow: none; font-weight: 800;
+}
+#pantalla-login > p button:hover, #pantalla-registro > p button:hover { text-decoration: underline; background: transparent; }
+#mensaje-login, #mensaje-registro, #mensaje-unirse { min-height: 0; margin: 0; color: var(--color-error); font-size: .9rem; overflow-wrap: anywhere; }
+
+/* Pantalla de inicio: cabecera y puntos ordenados sin desbordes */
+#pantalla-inicio > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 18px; border-bottom: 1px solid var(--color-borde); }
+#pantalla-inicio > header > div { display: flex; align-items: center; gap: 10px; min-width: 0; }
+#pantalla-inicio > header > div span:last-child { overflow-wrap: anywhere; font-weight: 750; }
+#abrir-perfil { width: 42px; min-width: 42px; min-height: 42px; padding: 0; border-radius: 50%; }
+#pantalla-inicio > header p { margin: 0; text-align: right; font-size: .86rem; }
+#pantalla-inicio > div { padding-top: 24px; }
+#pantalla-inicio > div p { margin: 12px 0 24px; }
+#empezar-a-jugar { min-height: 54px; border-color: rgba(239,211,133,.85); background: linear-gradient(115deg, #a88532, #d5b85f 55%, #a88532); color: #10120b; box-shadow: 0 8px 26px rgba(202,164,68,.18); }
+#empezar-a-jugar:hover { color: #000; background: linear-gradient(115deg, #d5b85f, #f3dd91 55%, #d5b85f); }
+
+/* Menús con espacios constantes y acciones claramente separadas */
+#pantalla-menu-partidas { display: flex; flex-direction: column; gap: 12px; }
+#pantalla-menu-partidas > header { margin-bottom: 10px; }
+#pantalla-menu-partidas > button:last-child,
+#volver-menu-desde-crear, #volver-menu-desde-unirse, #cerrar-perfil { margin-top: 4px; background: transparent; border-color: rgba(255,255,255,.18); box-shadow: none; color: #e1e5e2; }
+#resultado-partida { margin-top: 22px; padding: 20px; text-align: center; border: 1px solid rgba(232,197,98,.38); border-radius: 16px; background: rgba(0,0,0,.32); }
+#resultado-partida p { margin: 0 0 8px; }
+#codigo-partida { display: block; margin: 10px 0; color: #f0d47e; font-size: clamp(1.8rem, 8vw, 2.5rem); letter-spacing: .12em; overflow-wrap: anywhere; }
+#pantalla-perfil > p { margin: 18px 0; }
+#cerrar-sesion { margin-top: 10px; border-color: rgba(255,255,255,.24); background: #111713; }
+
+@media (min-width: 700px) {
+  #app { padding-left: 32px; padding-right: 32px; }
+  #app > section { padding: 38px; }
+}
+@media (max-width: 380px) {
+  #app { padding: 14px 10px; }
+  #app > section { padding: 22px 18px; border-radius: 19px; }
+  #pantalla-inicio > header { align-items: flex-start; flex-direction: column; }
+  #pantalla-inicio > header p { text-align: left; }
+}
+
+.check-field { display: flex; align-items: flex-start; gap: .65rem; }
+.check-field label { display: flex; align-items: flex-start; gap: .55rem; }
+.check-field input[type="checkbox"] { width: auto; min-width: 1rem; margin-top: .25rem; }
+.help-text { color: var(--color-texto-secundario); font-size: .9rem; line-height: 1.5; }
+
+.request-card {
+  border: 1px solid var(--color-borde, rgba(255,255,255,.16));
+  border-radius: 1rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  background: rgba(255,255,255,.035);
+}
+.request-card h2 { margin-top: 0; }
+.request-actions { display: flex; gap: .75rem; flex-wrap: wrap; margin-top: .75rem; }
+.request-actions button { flex: 1 1 8rem; }
+
+
+/* Estado del equipo para jugadores */
+.team-status {
+  margin: 0 0 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(216,182,92,.42);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(216,182,92,.09), rgba(0,0,0,.18));
+}
+.team-status h2 { margin: 0 0 .65rem; font-size: 1.2rem; }
+.team-status p { margin: .5rem 0; overflow-wrap: anywhere; }
+.team-status button { margin-top: .65rem; }
+
+
+/* Juego GPS y rangos */
+.rank-tag{display:inline-block;padding:.22rem .65rem;border-radius:999px;font-size:.72rem;font-weight:800;letter-spacing:.05em;color:#fff}
+.rank-novato{background:#858b94}.rank-aprendiz{background:#22a447}.rank-veterano{background:#2878df}.rank-cazatesoros{background:#9333ea}.rank-leyenda{background:#b89122;color:#17130a}
+.game-lock{min-height:54vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem 1.25rem;margin:1rem 0;border-radius:18px;background:#050505;color:#f4f4f4;border:1px solid #292929}
+.game-lock-icon{font-size:3rem}.game-lock p{max-width:28rem;line-height:1.6;color:#ddd}.game-lock button{margin-top:1rem}
+.game-map-placeholder{min-height:140px;border-radius:16px;background:linear-gradient(135deg,#193d2b,#477a4d);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:1rem;margin:1rem 0;color:#fff}.game-map-placeholder p{margin:.4rem 0}
+.challenge-card{padding:1rem;border:1px solid var(--color-borde);border-radius:16px;background:rgba(255,255,255,.035)}.challenge-card h2{font-size:1.15rem}.challenge-card input:disabled{opacity:.55}.challenge-card form{display:grid;gap:.7rem}.challenge-card form button:disabled{opacity:.45}
+
+
+/* Cronómetro y ranking final */
+.clock-label { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.8rem 1rem; margin:.8rem 0 1rem; border:1px solid rgba(216,182,92,.4); border-radius:14px; background:rgba(216,182,92,.08); }
+#cronometro-partida { font-variant-numeric:tabular-nums; font-size:1.6rem; font-weight:900; letter-spacing:.04em; }
+#cronometro-partida.clock-expired { color:#ff7777; }
+.ranking-list { display:grid; gap:.8rem; list-style:none; padding:0; margin:1.2rem 0; }
+.ranking-item { display:grid; grid-template-columns:3.4rem minmax(0,1fr) auto; align-items:center; gap:.45rem .8rem; padding:1rem; border:2px solid #6f7781; border-radius:16px; background:rgba(255,255,255,.035); }
+.ranking-position { grid-row:span 2; display:grid; place-items:center; width:2.8rem; height:2.8rem; border-radius:50%; font-weight:900; background:rgba(255,255,255,.08); }
+.ranking-player-name { overflow-wrap:anywhere; }
+.ranking-points { font-weight:800; text-align:right; }
+.ranking-item small { grid-column:2 / -1; color:var(--color-texto-secundario); }
+.ranking-gold { border-color:#d8b65c; box-shadow:0 0 0 1px rgba(216,182,92,.18); }
+.ranking-gold .ranking-position { background:linear-gradient(135deg,#ffe9a0,#b8860b); color:#211800; }
+.ranking-silver { border-color:#c0c7d1; }
+.ranking-silver .ranking-position { background:linear-gradient(135deg,#f4f6f8,#8b96a5); color:#171a20; }
+.ranking-bronze { border-color:#b8794c; }
+.ranking-bronze .ranking-position { background:linear-gradient(135deg,#e9b18b,#8d4b2c); color:#241108; }
+.ranking-normal { border-color:rgba(255,255,255,.2); }
+@media(max-width:420px) { .ranking-item { grid-template-columns:2.8rem minmax(0,1fr); } .ranking-points { grid-column:2; text-align:left; } .ranking-item small { grid-column:2; } }
+
+
+/* Mapa en vivo de la plaza */
+.live-map-card{margin:1rem 0 1.25rem;padding:1rem;border:1px solid rgba(216,182,92,.42);border-radius:16px;background:linear-gradient(145deg,rgba(216,182,92,.08),rgba(0,0,0,.18));}
+.live-map-card h2{margin:0 0 .45rem;font-size:1.2rem;}
+.live-map-caption{display:flex;align-items:center;gap:.55rem;margin:.4rem 0 .75rem;color:var(--color-texto-secundario,#d1d5db);font-size:.9rem;}
+.live-map{height:280px;min-height:220px;width:100%;border-radius:12px;overflow:hidden;background:#dbe6d0;z-index:0;}
+.live-map-help{font-size:.82rem;color:var(--color-texto-secundario,#d1d5db);margin:.65rem 0 0;}
+.gps-live-dot{width:10px;height:10px;display:inline-block;border-radius:50%;background:#ef4444;box-shadow:0 0 0 0 rgba(239,68,68,.7);animation:gpsPulse 1.35s infinite;}
+.gps-pulse-marker{position:relative;width:22px;height:22px;}
+.gps-pulse-marker::before{content:"";position:absolute;inset:0;border-radius:50%;background:rgba(220,38,38,.25);animation:gpsPulse 1.35s infinite;}
+.gps-pulse-marker::after{content:"";position:absolute;width:12px;height:12px;left:5px;top:5px;border-radius:50%;background:#dc2626;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.65);}
+@keyframes gpsPulse{0%{box-shadow:0 0 0 0 rgba(239,68,68,.55);transform:scale(.92)}70%{box-shadow:0 0 0 9px rgba(239,68,68,0);transform:scale(1)}100%{box-shadow:0 0 0 0 rgba(239,68,68,0);transform:scale(.92)}}
+@media(max-width:480px){.live-map{height:245px;}}

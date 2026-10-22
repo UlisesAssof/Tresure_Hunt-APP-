@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Aplicación móvil para organizar partidas de búsqueda del tesoro.">
+  <title>Búsqueda del tesoro</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app">
+
+    <!-- PANTALLA 1: INICIO DE SESIÓN -->
+    <section id="pantalla-login" aria-labelledby="titulo-login">
+      <header>
+        <h1 id="titulo-login">Búsqueda del tesoro</h1>
+        <p>Iniciá sesión para continuar.</p>
+      </header>
+      <form id="form-login">
+        <div>
+          <label for="login-usuario">Usuario</label>
+          <input type="text" id="login-usuario" name="usuario" autocomplete="username" required>
+        </div>
+        <div>
+          <label for="login-contrasena">Contraseña</label>
+          <input type="password" id="login-contrasena" name="contrasena" autocomplete="current-password" required>
+        </div>
+        <p id="mensaje-login" role="status" aria-live="polite"></p>
+        <button type="submit">Iniciar sesión</button>
+      </form>
+      <p>¿No tenés una cuenta? <button type="button" id="ir-a-registro">Crear una cuenta</button></p>
+    </section>
+
+    <!-- PANTALLA 2: REGISTRO -->
+    <section id="pantalla-registro" aria-labelledby="titulo-registro" hidden>
+      <header>
+        <h1 id="titulo-registro">Crear cuenta</h1>
+        <p>Registrate para empezar a jugar.</p>
+      </header>
+      <form id="form-registro">
+        <h2>Datos de acceso</h2>
+        <div>
+          <label for="registro-usuario">Nombre de usuario</label>
+          <input type="text" id="registro-usuario" name="usuario" autocomplete="username" minlength="3" maxlength="24" pattern="[A-Za-z0-9_.-]{3,24}" required>
+        </div>
+        <div>
+          <label for="registro-contrasena">Contraseña</label>
+          <input type="password" id="registro-contrasena" name="contrasena" autocomplete="new-password" minlength="8" required>
+        </div>
+        <div>
+          <label for="registro-confirmar-contrasena">Confirmar contraseña</label>
+          <input type="password" id="registro-confirmar-contrasena" name="confirmar-contrasena" autocomplete="new-password" minlength="8" required>
+        </div>
+        <h2>Datos del participante</h2>
+        <div><label for="registro-nombre">Nombre</label><input id="registro-nombre" name="nombre" autocomplete="given-name" maxlength="80" required></div>
+        <div><label for="registro-apellido">Apellido</label><input id="registro-apellido" name="apellido" autocomplete="family-name" maxlength="80" required></div>
+        <div><label for="registro-edad">Edad</label><input type="number" id="registro-edad" name="edad" min="1" max="120" required></div>
+        <div><label for="registro-telefono">Teléfono</label><input type="tel" id="registro-telefono" name="telefono" autocomplete="tel" maxlength="30" required></div>
+        <div><label for="registro-instagram">Instagram (opcional)</label><input type="text" id="registro-instagram" name="instagram" autocomplete="off" maxlength="80" placeholder="@usuario"></div>
+        <div class="check-field"><label><input type="checkbox" id="registro-consentimiento" required> Confirmo que leí y acepto el consentimiento de participación.</label></div>
+        <fieldset id="bloque-tutor" hidden>
+          <legend>Autorización del tutor (obligatoria para menores de 18 años)</legend>
+          <div><label for="registro-tutor-nombre">Nombre del tutor</label><input id="registro-tutor-nombre" name="tutor-nombre" maxlength="80"></div>
+          <div><label for="registro-tutor-apellido">Apellido del tutor</label><input id="registro-tutor-apellido" name="tutor-apellido" maxlength="80"></div>
+          <div class="check-field"><label><input type="checkbox" id="registro-tutor-autorizacion"> Confirmo que el tutor autoriza la participación.</label></div>
+          <p class="help-text">La aplicación registra esta declaración. Si la organización necesita comprobar la identidad del tutor, deberá implementar un proceso de verificación adicional.</p>
+        </fieldset>
+        <p id="mensaje-registro" role="status" aria-live="polite"></p>
+        <button type="submit">Crear cuenta</button>
+      </form>
+      <p>¿Ya tenés una cuenta? <button type="button" id="volver-a-login">Volver al inicio de sesión</button></p>
+    </section>
+
+    <!-- PANTALLA 3: INICIO DEL JUGADOR -->
+    <section id="pantalla-inicio" aria-labelledby="titulo-inicio" hidden>
+      <header>
+        <div>
+          <button type="button" id="abrir-perfil" aria-label="Abrir perfil"><span aria-hidden="true">👤</span></button>
+          <span id="nombre-usuario">Usuario</span>
+        </div>
+        <p><span id="rango-usuario" class="rank-tag rank-novato">NOVATO</span></p><p>Puntos totales: <strong id="total-puntos">0</strong></p>
+      </header>
+      <div>
+        <h1 id="titulo-inicio">¡Preparado para la aventura!</h1>
+        <p>Creá una partida o unite a una existente.</p>
+        <button type="button" id="empezar-a-jugar">Empezar a jugar</button>
+      </div>
+    </section>
+
+    <!-- PANTALLA 4: MENÚ DE PARTIDAS -->
+    <section id="pantalla-menu-partidas" aria-labelledby="titulo-menu-partidas" hidden>
+      <header>
+        <h1 id="titulo-menu-partidas">Partidas</h1>
+        <p>¿Cómo querés jugar?</p>
+      </header>
+      <div id="acciones-organizador" hidden>
+        <button type="button" id="ir-a-crear-equipo">Crear equipo</button>
+        <button type="button" id="ir-a-administrar-equipos">Organizar equipos</button>
+        <button type="button" id="ir-a-solicitudes-equipo">Solicitudes de equipos</button>
+        <button type="button" id="ir-a-crear-partida">Crear partida</button>
+        <button type="button" id="ir-a-administrar-partidas">Administrar partidas y equipos</button>
+      </div>
+      <div id="estado-equipo-jugador" class="team-status" hidden>
+        <h2 id="titulo-estado-equipo">Mi equipo</h2>
+        <p id="detalle-estado-equipo">Consultando tu estado...</p>
+        <p id="codigo-mi-equipo" hidden></p>
+        <p id="estado-partida-equipo" hidden></p>
+        <button type="button" id="abrir-juego-gps" hidden>Entrar a la búsqueda del tesoro</button>
+        <button type="button" id="abandonar-equipo" class="button-danger" hidden>Abandonar equipo</button>
+        <p id="mensaje-abandonar-equipo" role="status" aria-live="polite" hidden></p>
+        <button type="button" id="actualizar-estado-equipo">Actualizar estado</button>
+      </div>
+      <div id="acciones-jugador" hidden>
+        <button type="button" id="ir-a-unirse-partida">Solicitar unirse a un equipo</button>
+      </div>
+      <button type="button" id="volver-a-inicio">Volver al inicio</button>
+    </section>
+
+    <!-- PANTALLA DE JUEGO: se habilita al llegar a Plaza Rodríguez Peña -->
+    <section id="pantalla-juego" aria-labelledby="titulo-juego" hidden>
+      <header><h1 id="titulo-juego">Búsqueda del tesoro</h1><p class="clock-label">Tiempo restante: <strong id="cronometro-partida" aria-live="off">--:--</strong></p><p id="estado-gps-juego" role="status" aria-live="polite">Necesitamos tu ubicación para habilitar el mapa.</p></header>
+      <div id="mapa-bloqueado" class="game-lock">
+        <div class="game-lock-icon" aria-hidden="true">📍</div>
+        <h2>Mapa bloqueado</h2>
+        <p>Acercate a la plaza Rodríguez Peña para poder jugar.</p>
+        <button type="button" id="activar-gps">Permitir ubicación y comprobar</button>
+      </div>
+      <div id="contenido-juego" hidden>
+        <p id="distancia-plaza"></p>
+        <section class="live-map-card" aria-labelledby="titulo-mapa-en-vivo"><h2 id="titulo-mapa-en-vivo">¡Estás en la plaza!</h2><p class="live-map-caption"><span class="gps-live-dot" aria-hidden="true"></span> Tu ubicación en vivo</p><div id="mapa-juego" class="live-map" role="application" aria-label="Mapa en vivo de Plaza Rodríguez Peña con tu ubicación marcada"></div><p class="live-map-help">El punto rojo titilante indica tu posición GPS.</p></section>
+        <div class="challenge-card">
+          <p id="progreso-punto">Punto 1 de 10</p><h2 id="elemento-punto">P01 · Monumento a Nicolás Rodríguez Peña</h2>
+          <p id="pista-punto"></p><p id="pregunta-punto"></p>
+          <p id="estado-punto-gps">Acercate al punto para habilitar la respuesta.</p>
+          <form id="form-respuesta-punto"><label for="respuesta-punto">Tu respuesta</label><input id="respuesta-punto" autocomplete="off" disabled required><button id="enviar-respuesta-punto" type="submit" disabled>Validar respuesta</button></form>
+          <p id="mensaje-respuesta-punto" role="status" aria-live="polite"></p>
+          <div id="panel-prueba-desarrollo" hidden>
+            <hr>
+            <h3>Herramientas de prueba (solo copia)</h3>
+            <p>Simula la respuesta correcta del objetivo actual y guarda el avance en Supabase, sin usar GPS real.</p>
+            <button type="button" id="simular-objetivo-prueba">Simular completar este objetivo</button>
+            <p id="mensaje-prueba-desarrollo" role="status" aria-live="polite"></p>
+          </div>
+        </div>
+      </div>
+      <button type="button" id="volver-juego-menu">Volver</button>
+    </section>
+
+
+    <!-- RESULTADOS: permanece visible hasta que cada jugador pulse Continuar -->
+    <section id="pantalla-ranking-final" aria-labelledby="titulo-ranking-final" hidden>
+      <header>
+        <h1 id="titulo-ranking-final">¡La partida ha finalizado!</h1>
+        <p>Estos son los resultados definitivos de la búsqueda del tesoro.</p>
+      </header>
+      <p id="resumen-puntos-ranking" aria-live="polite"></p>
+      <ol id="lista-ranking-final" class="ranking-list" aria-label="Ranking final"></ol>
+      <p>Leé los resultados con tranquilidad. Esta pantalla seguirá disponible hasta que decidas continuar.</p>
+      <button type="button" id="continuar-ranking">Continuar</button>
+    </section>
+
+    <!-- PANTALLA AUXILIAR: CREAR PARTIDA -->
+    <section id="pantalla-crear-partida" aria-labelledby="titulo-crear-partida" hidden>
+      <header>
+        <h1 id="titulo-crear-partida">Crear partida</h1>
+        <p>Se generará un código para compartir con los demás jugadores.</p>
+      </header>
+      <form id="form-crear-partida">
+        <div>
+          <label for="nombre-partida">Nombre de la partida</label>
+          <input type="text" id="nombre-partida" name="nombre-partida" maxlength="40" required>
+        </div>
+        <div>
+          <label for="duracion-partida">Duración</label>
+          <select id="duracion-partida" name="duracion-partida" required>
+            <option value="30">30 minutos</option>
+            <option value="60" selected>60 minutos</option>
+            <option value="90">90 minutos</option>
+            <option value="120">120 minutos</option>
+          </select>
+        </div>
+        <div>
+          <label for="min-integrantes">Mínimo de jugadores por equipo</label>
+          <select id="min-integrantes" name="min-integrantes" required>
+            <option value="3" selected>3 jugadores</option>
+            <option value="4">4 jugadores</option>
+            <option value="5">5 jugadores</option>
+          </select>
+        </div>
+        <div>
+          <label for="max-integrantes">Máximo de jugadores por equipo</label>
+          <select id="max-integrantes" name="max-integrantes" required>
+            <option value="3">3 jugadores</option>
+            <option value="4">4 jugadores</option>
+            <option value="5" selected>5 jugadores</option>
+          </select>
+        </div>
+        <div class="check-field">
+          <label><input type="checkbox" id="pistas-activadas" checked> Activar sistema de pistas</label>
+        </div>
+        <div class="check-field">
+          <label><input type="checkbox" id="gps-activado" checked> Activar validación por ubicación GPS</label>
+        </div>
+        <p class="help-text">Cada equipo debe respetar los límites configurados. Solo se podrán iniciar partidas con equipos que cumplan los requisitos.</p>
+        <p id="mensaje-crear-partida" role="status" aria-live="polite"></p>
+        <button type="submit">Crear partida</button>
+      </form>
+      <div id="resultado-partida" hidden>
+        <p>Código de la partida:</p>
+        <strong id="codigo-partida"></strong>
+        <p>Compartí este código con quienes quieran unirse.</p>
+      </div>
+      <button type="button" id="volver-menu-desde-crear">Volver</button>
+    </section>
+
+    <!-- PANTALLA: ADMINISTRAR PARTIDAS Y EQUIPOS -->
+    <section id="pantalla-administrar-partidas" aria-labelledby="titulo-administrar-partidas" hidden>
+      <header>
+        <h1 id="titulo-administrar-partidas">Administrar partidas</h1>
+        <p>Elegí una partida para agregar equipos aceptados e iniciar el juego.</p>
+      </header>
+      <p id="mensaje-administrar-partidas" role="status" aria-live="polite"></p>
+      <div id="lista-partidas-organizador" aria-live="polite">
+        <p>Presioná «Actualizar partidas» para consultar tus partidas.</p>
+      </div>
+      <div id="panel-partida-seleccionada" hidden>
+        <h2 id="titulo-partida-seleccionada">Partida seleccionada</h2>
+        <p id="detalle-partida-seleccionada"></p>
+        <label for="equipo-para-agregar">Agregar un equipo aceptado</label>
+        <select id="equipo-para-agregar">
+          <option value="">Seleccioná un equipo</option>
+        </select>
+        <button type="button" id="agregar-equipo-a-partida">Agregar equipo a la partida</button>
+        <h2>Equipos de esta partida</h2>
+        <div id="lista-equipos-partida"></div>
+        <button type="button" id="iniciar-partida">Iniciar partida</button>
+        <button type="button" id="finalizar-partida" hidden>Terminar partida</button>
+      </div>
+      <button type="button" id="actualizar-partidas-organizador">Actualizar partidas</button>
+      <button type="button" id="volver-menu-desde-administrar">Volver</button>
+    </section>
+
+    <!-- PANTALLA: ORGANIZAR EQUIPOS -->
+    <section id="pantalla-administrar-equipos" aria-labelledby="titulo-administrar-equipos" hidden>
+      <header>
+        <h1 id="titulo-administrar-equipos">Organizar equipos</h1>
+        <p>Consultá los equipos que creaste y eliminá los que ya no necesites.</p>
+      </header>
+      <p id="mensaje-administrar-equipos" role="status" aria-live="polite"></p>
+      <div id="lista-equipos-organizador" aria-live="polite">
+        <p>Presioná «Actualizar equipos» para consultar tus equipos.</p>
+      </div>
+      <button type="button" id="actualizar-equipos-organizador">Actualizar equipos</button>
+      <button type="button" id="volver-menu-desde-equipos">Volver</button>
+    </section>
+
+    <!-- PANTALLA: SOLICITUDES DE EQUIPO -->
+    <section id="pantalla-solicitudes-equipo" aria-labelledby="titulo-solicitudes-equipo" hidden>
+      <header>
+        <h1 id="titulo-solicitudes-equipo">Solicitudes de equipos</h1>
+        <p>Revisá las solicitudes pendientes y aceptá o rechazá a cada participante.</p>
+      </header>
+      <p id="mensaje-solicitudes-equipo" role="status" aria-live="polite"></p>
+      <div id="lista-solicitudes-equipo" aria-live="polite">
+        <p>Presioná «Actualizar solicitudes» para consultar los pedidos pendientes.</p>
+      </div>
+      <button type="button" id="actualizar-solicitudes-equipo">Actualizar solicitudes</button>
+      <button type="button" id="volver-menu-desde-solicitudes">Volver</button>
+    </section>
+
+    <!-- PANTALLA: CREAR EQUIPO -->
+    <section id="pantalla-crear-equipo" aria-labelledby="titulo-crear-equipo" hidden>
+      <header>
+        <h1 id="titulo-crear-equipo">Crear equipo</h1>
+        <p>Creá un equipo y compartí su código con los participantes.</p>
+      </header>
+      <form id="form-crear-equipo">
+        <div>
+          <label for="nombre-equipo">Nombre del equipo</label>
+          <input type="text" id="nombre-equipo" name="nombre-equipo" maxlength="50" required>
+        </div>
+        <p id="mensaje-crear-equipo" role="status" aria-live="polite"></p>
+        <button type="submit">Crear equipo</button>
+      </form>
+      <div id="resultado-equipo" hidden>
+        <p>Código del equipo:</p>
+        <strong id="codigo-equipo"></strong>
+        <p>Compartí este código con los jugadores.</p>
+      </div>
+      <button type="button" id="volver-menu-desde-equipo">Volver</button>
+    </section>
+
+    <!-- PANTALLA AUXILIAR: SOLICITAR INGRESO A UN EQUIPO -->
+    <section id="pantalla-unirse-partida" aria-labelledby="titulo-unirse-partida" hidden>
+      <header>
+        <h1 id="titulo-unirse-partida">Solicitar unirse a un equipo</h1>
+        <p>Ingresá el código del equipo que te compartieron. El organizador deberá aceptar tu solicitud.</p>
+      </header>
+      <form id="form-unirse-partida">
+        <div>
+          <label for="codigo-para-unirse">Código del equipo</label>
+          <input type="text" id="codigo-para-unirse" name="codigo" autocomplete="off" maxlength="12" required>
+        </div>
+        <p id="mensaje-unirse" role="status" aria-live="polite"></p>
+        <button type="submit">Unirme</button>
+      </form>
+      <button type="button" id="volver-menu-desde-unirse">Volver</button>
+    </section>
+
+    <!-- PANTALLA AUXILIAR: PERFIL -->
+    <section id="pantalla-perfil" aria-labelledby="titulo-perfil" hidden>
+      <header><h1 id="titulo-perfil">Mi perfil</h1></header>
+      <p>Usuario: <strong id="perfil-nombre-usuario">Usuario</strong></p>
+      <p><span id="perfil-rango-usuario" class="rank-tag rank-novato">NOVATO</span></p><p>Puntos totales: <strong id="perfil-total-puntos">0</strong></p>
+      <button type="button" id="cerrar-perfil">Volver</button>
+      <button type="button" id="cerrar-sesion">Cerrar sesión</button>
+    </section>
+
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>

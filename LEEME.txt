@@ -1,0 +1,5 @@
+VERSION ORIGINAL ACTUALIZADA — ABANDONAR EQUIPO
+
+1. Ejecutá primero abandonar_equipo.sql en el SQL Editor de Supabase.
+2. Reemplazá index.html y app.js por los de este paquete; mantené config.js con la configuración de tu proyecto.
+3. El botón aparece a los jugadores aceptados. La función SQL bloquea la salida si el equipo está en una partida en espera o en curso.
